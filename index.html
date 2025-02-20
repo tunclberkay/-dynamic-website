@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="nav">
+        <div class="container">
+            <div class="logo">
+                <a href="#">BLOGGER</a>
+            </div>
+            <div id="mainListDiv" class="main_list">
+                <ul class="navlinks">
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Portfolio</a></li>
+                    <li><a href="#">Services</a></li>
+                    <li><a href="#">Contact</a></li>
+                    <li><a href="sign.html">Login</a></li>
+                </ul>
+            </div>
+            <span class="navTrigger">
+                <i></i>
+                <i></i>
+                <i></i>
+            </span>
+        </div>
+    </nav>
+
+    <section class="home">
+    </section>
+    <div style="height: 1000px">
+        <!-- just to make scrolling effect possible -->
+			<h2 class="myH2">BLOGGER NEDİR ?</h2>
+			<p class="myP">Anonim olarak fotoğraf paylaşıp düşünceleriNizi paylaşabileceğiniz bir platform...</p>
+			
+			<p class="myP">Blogger</p>
+				<p class="myP">
+				Lorem ipsum dolor sit amet consectetur adipisicing elit. Minima laudantium eligendi dolorem, dignissimos nihil voluptate atque aliquid magni? Delectus, vitae. Dicta perferendis debitis incidunt tempore corporis expedita voluptatum qui ex.
+				
+			</p>
+
+            
+
+        
+
+            <div id="messagesContainer">
+                <div class="message"><div class="message-card" onclick="openModal('admin', 'Buraya tam metin gelecek')">
+                    <strong>admin</strong>
+                    <p>Buraya mesajın kısa önizlemesi gelecek...</p>
+                </div></div>
+    <div class="message ">2. Mesaj</div>
+    <div class="message ">3. Mesaj</div>
+    <div class="message ">4. Mesaj</div>
+    <div class="message">5. Mesaj</div>
+    <div class="message">6. Mesaj</div>
+    <div class="message">7. Mesaj</div>
+    <div class="message">8. Mesaj</div>
+    <div class="message">9. Mesaj</div>
+            </div>
+    </div>
+
+
+  
+
+ 
+
+<!-- Jquery needed -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="js/script.js"></script>
+
+<!-- Function used to shrink nav bar removing paddings and adding black background -->
+    <script>
+        $(window).scroll(function() {
+            if ($(document).scrollTop() > 50) {
+                $('.nav').addClass('affix');
+                console.log("OK");
+            } else {
+                $('.nav').removeClass('affix');
+            }
+        });
+    </script>
+
+    
+</body>
+</html>

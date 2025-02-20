@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-icon {
+            font-size: 20px;
+            color: white;
+        }
+
+        .logout-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .logout-btn:hover {
+            background: #c82333;
+        }
+
+        .message-form {
+            max-width: 500px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .message-form input, .message-form textarea, .message-form button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .message-form button {
+            background: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .message-form button:hover {
+            background: #218838;
+        }
+
+        .message-list {
+            max-width: 500px;
+            margin: 20px auto;
+        }
+
+        .message {
+            background: #fff;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav">
+        <div class="container">
+            <div class="logo">
+                <a href="#">BLOGGER</a>
+            </div>
+            <div id="mainListDiv" class="main_list">
+                <ul class="navlinks">
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Portfolio</a></li>
+                    <li><a href="#">Services</a></li>
+                    <li><a href="#">Contact</a></li>
+                    <li class="user-section">
+                        <i class="fa-solid fa-user user-icon"></i>
+                        <button id="logout" class="logout-btn">Çıkış Yap</button>
+                    </li>
+                </ul>
+            </div>
+            <span class="navTrigger">
+                <i></i>
+                <i></i>
+                <i></i>
+            </span>
+        </div>
+    </nav>
+
+    <section class="home">
+    </section>
+
+    <div style="height: 1000px">
+        <h2 class="myH2">Hoş Geldiniz!</h2>
+        <p class="myP">Burası kullanıcı panelinizdir.</p>
+
+        <div class="message-form">
+            <h3>Mesaj Gönder</h3>
+            <input type="text" id="username" readonly>
+            <textarea id="message" placeholder="Mesajınızı yazın..."></textarea>
+            <input type="file" id="image" accept="image/png">
+            <button onclick="sendMessage()">Gönder</button>
+        </div>
+    
+        <div class="message-list" id="messages-container">
+            <h3>Gönderilen Mesajlar</h3>
+        </div>
+
+       
+
+    </div>
+
+
+
+ 
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = "index.html";
+                return;
+            }
+        
+            // Kullanıcı profil bilgilerini çek
+            fetch('http://localhost:5000/profile', {
+                method: 'GET',
+                headers: { 'Authorization': token }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.username) {
+                    document.getElementById('username').value = data.username;
+                }
+            })
+            .catch(error => console.error('Hata:', error));
+        
+            // Çıkış yapma işlemi
+            document.getElementById('logout').addEventListener('click', function () {
+                localStorage.removeItem('token');
+                window.location.href = 'index.html';
+            });
+        
+            // Sayfa yüklendiğinde mesajları getir
+            loadMessages();
+        });
+        
+        // Mesaj gönderme fonksiyonu
+
+       function sendMessage() {
+    const token = localStorage.getItem('token');
+    const username = document.getElementById('username').value.trim();
+    const message = document.getElementById('message').value.trim();
+    const imageInput = document.getElementById('image').files[0];
+
+    if (!username || !message) {
+        alert("Hata: Kullanıcı adı ve mesaj gereklidir!");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('username', username); // 🔹 Kullanıcı adını ekle
+    formData.append('message', message);
+    if (imageInput) {
+        formData.append('image', imageInput);
+    }
+
+    fetch('http://localhost:5000/messages', {
+        method: 'POST',
+        headers: {
+            'Authorization': token // 🔹 Content-Type'ı elle ekleme!
+        },
+        body: formData // ✅ JSON.stringify kullanma, FormData'yı direkt gönder
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert("Hata: " + data.error);
+        } else {
+            alert("Mesaj başarıyla gönderildi!");
+            fetchMessages(); // ✅ Mesaj listesini güncelle
+        }
+    })
+    .catch(error => {
+        console.error('Hata:', error);
+        alert("Mesaj gönderilirken hata oluştu.");
+    });
+}
+        // Mesajları yükleme fonksiyonu
+        function loadMessages() {
+    fetch('http://localhost:5000/messages')
+        .then(response => response.json())
+        .then(messages => {
+            const container = document.getElementById('messages-container');
+            container.innerHTML = '<h3>Gönderilen Mesajlar</h3>';
+            messages.forEach(msg => {
+                const div = document.createElement('div');
+                div.classList.add('message');
+
+                 // Mesajı 100 karakterle sınırla ve "..." ekle
+                 const truncatedMessage = msg.message.length > 100 ? msg.message.substring(0, 100) + "..." : msg.message;
+
+                  // Kullanıcı adı ve mesaj için <p> etiketi
+                const messageContent = document.createElement('p');
+                messageContent.innerHTML = `<strong>${msg.username}:</strong> `; // Kullanıcı adını içeriğe ekle
+
+                // Mesaj içeriğini textNode olarak ekle (HTML olarak değil)
+                const textNode = document.createTextNode(truncatedMessage);
+                messageContent.appendChild(textNode);
+
+                div.appendChild(messageContent);
+
+
+                if (msg.image) {
+                    const img = document.createElement('img');
+                    img.src = msg.image; // Base64 formatındaki resmi kullan
+                    img.alt = "Kullanıcı Resmi";
+                    img.style.maxWidth = '100px'; // Resim boyutunu ayarla
+                    div.appendChild(img);
+                }
+
+                container.appendChild(div);
+            });
+        })
+        .catch(error => console.error('Hata:', error));
+}
+        </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="js/script.js"></script>
+
+    <!-- Function used to shrink nav bar removing paddings and adding black background -->
+    <script>
+        $(window).scroll(function() {
+            if ($(document).scrollTop() > 50) {
+                $('.nav').addClass('affix');
+                console.log("OK");
+            } else {
+                $('.nav').removeClass('affix');
+            }
+        });
+    </script>
+</body>
+</html>

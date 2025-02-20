@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Üye Girişi ve Kayıt</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #218838;
+        }
+        .toggle {
+            color: blue;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 id="form-title">Giriş Yap</h2>
+        <form id="auth-form">
+            <input type="text" id="username" placeholder="Kullanıcı Adı" required>
+            <input type="password" id="password" placeholder="Şifre" required>
+            <button type="submit">Giriş Yap</button>
+        </form>
+        <p id="toggle-text">Hesabın yok mu? <span class="toggle" onclick="toggleForm()">Kayıt Ol</span></p>
+    </div>
+
+    <script>
+       document.getElementById('auth-form').addEventListener('submit', async function (event) {
+    event.preventDefault(); // Sayfanın yenilenmesini engelle
+
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const emailField = document.getElementById('email'); // Email input var mı kontrol et
+    const email = emailField ? emailField.value : null;
+
+    const endpoint = isLogin ? 'http://localhost:5000/login' : 'http://localhost:5000/register';
+    const requestBody = { username, password };
+    
+    if (!isLogin) requestBody.email = email; // Kayıt olma durumunda email ekle
+
+    try {
+        const response = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(requestBody)
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+            if (isLogin) {
+                
+                localStorage.setItem("token", data.token); // Token'ı sakla
+            } else {
+                alert("Kayıt başarılı! Şimdi giriş yapabilirsiniz.");
+                toggleForm(); // Kayıttan sonra giriş formuna geç
+            }
+        } else {
+            alert("Hata: " + data.error);
+        }
+    } catch (error) {
+        console.error("Bağlantı hatası:", error);
+        alert("Sunucuya bağlanılamadı.");
+    }
+});
+
+    </script>
+
+<script>
+    let isLogin = true;
+
+    function toggleForm() {
+        isLogin = !isLogin;
+        document.getElementById('form-title').innerText = isLogin ? 'Giriş Yap' : 'Kayıt Ol';
+        
+        document.getElementById('auth-form').innerHTML = `
+            ${!isLogin ? '<input type="email" id="email" placeholder="E-posta" required>' : ''}
+            <input type="text" id="username" placeholder="Kullanıcı Adı" required>
+            <input type="password" id="password" placeholder="Şifre" required>
+            <button type="submit">${isLogin ? 'Giriş Yap' : 'Kayıt Ol'}</button>
+        `;
+        
+        document.getElementById('toggle-text').innerHTML = isLogin 
+            ? 'Hesabın yok mu? <span class="toggle" onclick="toggleForm()">Kayıt Ol</span>' 
+            : 'Zaten üye misin? <span class="toggle" onclick="toggleForm()">Giriş Yap</span>';
+
+        attachFormListener(); // Form event listener'ını tekrar ekle
+    }
+
+    function attachFormListener() {
+    document.getElementById('auth-form').addEventListener('submit', async function(event) {
+        event.preventDefault(); // Sayfanın yenilenmesini önle
+
+        let username = document.getElementById('username').value;
+        let password = document.getElementById('password').value;
+        let emailField = document.getElementById('email');
+
+        let email = emailField ? emailField.value : null;
+        let endpoint = email ? '/register' : '/login'; // Kayıt mı giriş mi kontrol et
+
+        let bodyData = email 
+            ? { username, email, password } // Kayıt olma için
+            : { username, password }; // Giriş için
+
+        try {
+            let response = await fetch(`http://localhost:5000${endpoint}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(bodyData)
+            });
+
+            let result = await response.json();
+
+            if (response.ok) {
+                alert(result.message || "İşlem başarılı!");
+                if (!email) { 
+                    localStorage.setItem("username", result.username); // Kullanıcı adını kaydet
+                    window.location.href = "index2.html"; // Kullanıcıyı yönlendir
+                }
+            } else {
+                alert(result.error);
+            }
+        } catch (error) {
+            alert("Bağlantı hatası! Backend çalışıyor mu?");
+        }
+    });
+}
+
+    attachFormListener(); // İlk yüklemede formu dinle
+</script>
+
+</body>
+</html>
